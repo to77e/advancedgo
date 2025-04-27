@@ -2,7 +2,6 @@ package hw03
 
 import (
 	"runtime"
-	"sync"
 	"testing"
 	"time"
 
@@ -14,7 +13,6 @@ func TestCOWBufferFinalizer(t *testing.T) {
 	buffer := &COWBuffer{
 		data: []byte("test"),
 		refs: &refs,
-		mu:   &sync.Mutex{},
 	}
 
 	runtime.SetFinalizer(buffer, (*COWBuffer).Close)
