@@ -63,10 +63,10 @@ func (q *CircularQueueGeneric[T]) Back() T {
 
 // Empty - проверить пустая ли очередь
 func (q *CircularQueueGeneric[T]) Empty() bool {
-	return q.used <= 0
+	return q.used == 0
 }
 
 // Full - проверить заполнена ли очередь
 func (q *CircularQueueGeneric[T]) Full() bool {
-	return q.used >= q.size
+	return q.used == q.size
 }
