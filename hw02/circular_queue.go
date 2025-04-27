@@ -59,10 +59,10 @@ func (q *CircularQueue) Back() int {
 
 // Empty - проверить пустая ли очередь
 func (q *CircularQueue) Empty() bool {
-	return q.used <= 0
+	return q.used == 0
 }
 
 // Full - проверить заполнена ли очередь
 func (q *CircularQueue) Full() bool {
-	return q.used >= q.size
+	return q.used == q.size
 }
