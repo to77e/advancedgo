@@ -13,9 +13,6 @@ func NewCircularQueue(size int) CircularQueue {
 	return CircularQueue{
 		values: make([]int, size),
 		size:   size,
-		used:   0,
-		front:  0,
-		rear:   0,
 	}
 }
 

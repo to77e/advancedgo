@@ -17,9 +17,6 @@ func NewCircularQueueGeneric[T Signed](size int) CircularQueueGeneric[T] {
 	return CircularQueueGeneric[T]{
 		values: make([]T, size),
 		size:   size,
-		front:  0,
-		rear:   0,
-		used:   0,
 	}
 }
 
