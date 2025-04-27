@@ -1,116 +1,84 @@
 package hw04
 
 type OrderedMap struct {
-	key   *int
-	value *int
+	key   int
+	value int
+	size  *int
 	left  *OrderedMap
 	right *OrderedMap
 }
 
 // NewOrderedMap - создать новый упорядоченный словарь
 func NewOrderedMap() OrderedMap {
-	return OrderedMap{}
+	return OrderedMap{
+		size: new(int),
+	}
 }
 
 // Insert - добавить элемент в словарь
 func (m *OrderedMap) Insert(key, value int) {
-	if m == nil || m.key == nil || m.value == nil {
-		m.key = &key
-		m.value = &value
+	if *m.size == 0 {
+		*m.size++
+		m.key, m.value = key, value
 		return
 	}
-
-	curr := m
-	var prev *OrderedMap
-	for curr != nil {
-		if key == *curr.key {
-			*curr.value = value
-			return
-		}
-		prev = curr
-		if key < *curr.key {
-			curr = curr.left
+	if key > m.key {
+		if m.right == nil {
+			*m.size++
+			m.right = &OrderedMap{key: key, value: value, size: m.size}
 		} else {
-			curr = curr.right
+			m.right.Insert(key, value)
 		}
 	}
-
-	newMap := OrderedMap{
-		key:   &key,
-		value: &value,
-	}
-	if prev == nil {
-		prev = &newMap
-	} else if key < *prev.key {
-		prev.left = &newMap
-	} else {
-		prev.right = &newMap
+	if key < m.key {
+		if m.left == nil {
+			*m.size++
+			m.left = &OrderedMap{key: key, value: value, size: m.size}
+		} else {
+			m.left.Insert(key, value)
+		}
 	}
 }
 
 // Erase - удалить элемент из словари
 func (m *OrderedMap) Erase(key int) {
-	if m == nil || m.key == nil || m.value == nil {
+	if *m.size == 0 || !m.Contains(key) {
 		return
 	}
-	curr := m
-	var prev *OrderedMap
-	for curr != nil && *curr.key != key {
-		prev = curr
-		if key < *curr.key {
-			curr = curr.left
-		} else {
-			curr = curr.right
+
+	if *m.size == 1 && m.key == key {
+		*m.size--
+		m.key, m.value = 0, 0
+		return
+	}
+
+	tempMap := NewOrderedMap()
+	m.ForEach(func(k, v int) {
+		if k != key {
+			tempMap.Insert(k, v)
 		}
-	}
+	})
 
-	if curr == nil {
-		return
-	}
-
-	if curr.right == nil {
-		if prev == nil {
-			*m = *curr.left
-		} else if prev.left == curr {
-			prev.left = curr.left
-		} else {
-			prev.right = curr.left
-		}
-		return
-	}
-
-	leftMost := curr.right
-	var leftMostPrev *OrderedMap
-
-	for leftMost.left != nil {
-		leftMostPrev = leftMost
-		leftMost = leftMost.left
-	}
-
-	curr.key = leftMost.key
-	curr.value = leftMost.value
-
-	if leftMostPrev != nil {
-		leftMostPrev.left = leftMost.right
-	} else {
-		curr.right = leftMost.right
-	}
+	*m = tempMap
 }
 
 // Contains - проверить существование элемента в словаре
 func (m *OrderedMap) Contains(key int) bool {
-	if m == nil || m.key == nil || m.value == nil {
-		return false
+	if key == m.key && key != 0 {
+		return true
 	}
-	curr := m
-	for curr != nil {
-		if key == *curr.key {
-			return true
-		}
-		if key < *curr.key {
-			curr = curr.left
+	if key > m.key {
+		if m.right == nil {
+			return false
 		} else {
-			curr = curr.right
+			return m.right.Contains(key)
+		}
+	}
+	if key < m.key {
+		if m.left == nil {
+			return false
+		} else {
+			return m.left.Contains(key)
 		}
 	}
 	return false
@@ -118,18 +86,16 @@ func (m *OrderedMap) Contains(key int) bool {
 
 // Size - получить количество элементов в словаре
 func (m *OrderedMap) Size() int {
-	if m == nil || m.key == nil || m.value == nil {
-		return 0
-	}
-	return 1 + m.left.Size() + m.right.Size()
+	return *m.size
 }
 
 // ForEach - применить функцию к каждому элементу словаря от меньшего к большему
 func (m *OrderedMap) ForEach(action func(int, int)) {
-	if m == nil || m.key == nil || m.value == nil {
-		return
+	if m.left != nil {
+		m.left.ForEach(action)
 	}
-	m.left.ForEach(action)
-	action(*m.key, *m.value)
-	m.right.ForEach(action)
+	action(m.key, m.value)
+	if m.right != nil {
+		m.right.ForEach(action)
+	}
 }
