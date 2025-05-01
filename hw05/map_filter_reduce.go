@@ -4,6 +4,9 @@ func Map(data []int, action func(int) int) []int {
 	if data == nil {
 		return nil
 	}
+	if len(data) == 0 {
+		return []int{}
+	}
 	newData := make([]int, 0, len(data))
 	for _, v := range data {
 		newData = append(newData, action(v))
@@ -14,6 +17,9 @@ func Map(data []int, action func(int) int) []int {
 func Filter(data []int, action func(int) bool) []int {
 	if data == nil {
 		return nil
+	}
+	if len(data) == 0 {
+		return []int{}
 	}
 	newData := make([]int, 0, len(data))
 	for _, v := range data {
