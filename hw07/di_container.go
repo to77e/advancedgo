@@ -31,5 +31,9 @@ func (c *Container) Resolve(name string) (interface{}, error) {
 		return nil, errors.New("service not found")
 	}
 
-	return constructor.(func() interface{})(), nil
+	fn, ok := constructor.(func() interface{})
+	if !ok {
+		return nil, errors.New("invalid constructor type")
+	}
+	return fn(), nil
 }
