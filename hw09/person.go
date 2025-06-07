@@ -8,7 +8,7 @@ import (
 
 type Person struct {
 	Name    string `properties:"name"`
-	Address string `properties:"address,omitempty"`
+	Address string `properties:"omitempty,address"`
 	Age     int    `properties:"age"`
 	Married bool   `properties:"married"`
 }
@@ -34,7 +34,14 @@ func Serialize(person interface{}) string {
 		if !present || (strings.Contains(value, "omitempty") && v.Field(i).IsZero()) {
 			continue
 		}
-		name := strings.Split(value, ",")[0]
+		parts := strings.Split(value, ",")
+		name := ""
+		for _, part := range parts {
+			if part != "omitempty" && part != "" {
+				name = part
+				break
+			}
+		}
 		vField := v.Field(i)
 		result = append(result, fmt.Sprintf("%s=%v", name, vField))
 	}
