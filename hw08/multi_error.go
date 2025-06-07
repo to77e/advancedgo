@@ -10,6 +10,9 @@ type MultiError struct {
 }
 
 func (e *MultiError) Error() string {
+	if len(e.errors) == 0 {
+		return "no errors"
+	}
 
 	var sb strings.Builder
 	sb.WriteString(fmt.Sprintf("%d errors occurred:\n", len(e.errors)))
