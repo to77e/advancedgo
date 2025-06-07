@@ -12,19 +12,17 @@ func Defragment(memory []byte, pointers []unsafe.Pointer) {
 	base := uintptr(unsafe.Pointer(&memory[0]))
 	write := uintptr(0)
 
+	pointerPos := make(map[uintptr]int)
+	for i, p := range pointers {
+		pointerPos[uintptr(p)-base] = i
+	}
+
 	for read := uintptr(0); read < uintptr(len(memory)); read++ {
-		var usedHere bool
-		for i, p := range pointers {
-			if uintptr(p)-base == read {
-				usedHere = true
-				if read != write {
-					memory[write] = memory[read]
-				}
-				pointers[i] = unsafe.Pointer(&memory[write])
-				break
+		if i, exists := pointerPos[read]; exists {
+			if read != write {
+				memory[write] = memory[read]
 			}
-		}
-		if usedHere {
+			pointers[i] = unsafe.Pointer(&memory[write])
 			write++
 		}
 	}
