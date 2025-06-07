@@ -5,91 +5,100 @@ type Task struct {
 	Priority   int
 }
 
-type Scheduler struct {
+type PriorityHeap struct {
 	tasks      []Task
 	idToIndex  map[int]int
 	priorities map[int]int
 }
 
+type Scheduler struct {
+	heap PriorityHeap
+}
+
 func NewScheduler() Scheduler {
 	return Scheduler{
-		tasks:      make([]Task, 0),
-		idToIndex:  make(map[int]int),
-		priorities: make(map[int]int),
+		heap: PriorityHeap{
+			tasks:      []Task{},
+			idToIndex:  make(map[int]int),
+			priorities: make(map[int]int),
+		},
 	}
 }
 
 func (s *Scheduler) AddTask(task Task) {
-	s.tasks = append(s.tasks, task)
-	index := len(s.tasks) - 1
-	s.idToIndex[task.Identifier] = index
-	s.priorities[task.Identifier] = task.Priority
+	h := &s.heap
+	h.tasks = append(h.tasks, task)
+	index := len(h.tasks) - 1
+	h.idToIndex[task.Identifier] = index
+	h.priorities[task.Identifier] = task.Priority
 
-	s.siftUp(index)
+	h.siftUp(index)
 }
 
 func (s *Scheduler) ChangeTaskPriority(taskID int, newPriority int) {
-	index, exists := s.idToIndex[taskID]
+	h := &s.heap
+	index, exists := h.idToIndex[taskID]
 	if !exists {
 		return
 	}
 
-	oldPriority := s.priorities[taskID]
-	s.priorities[taskID] = newPriority
+	oldPriority := h.priorities[taskID]
+	h.priorities[taskID] = newPriority
 
 	if newPriority > oldPriority {
-		s.siftUp(index)
+		h.siftUp(index)
 	} else if newPriority < oldPriority {
-		s.siftDown(index)
+		h.siftDown(index)
 	}
 }
 
 func (s *Scheduler) GetTask() Task {
-	if len(s.tasks) == 0 {
+	h := &s.heap
+	if len(h.tasks) == 0 {
 		return Task{}
 	}
 
-	task := s.tasks[0]
+	task := h.tasks[0]
 
-	lastIndex := len(s.tasks) - 1
-	s.tasks[0] = s.tasks[lastIndex]
-	s.tasks = s.tasks[:lastIndex]
+	lastIndex := len(h.tasks) - 1
+	h.tasks[0] = h.tasks[lastIndex]
+	h.tasks = h.tasks[:lastIndex]
 
-	delete(s.idToIndex, task.Identifier)
-	delete(s.priorities, task.Identifier)
+	delete(h.idToIndex, task.Identifier)
+	delete(h.priorities, task.Identifier)
 
 	if lastIndex > 0 {
-		s.idToIndex[s.tasks[0].Identifier] = 0
-		s.siftDown(0)
+		h.idToIndex[h.tasks[0].Identifier] = 0
+		h.siftDown(0)
 	}
 
 	return task
 }
 
-func (s *Scheduler) siftUp(index int) {
+func (h *PriorityHeap) siftUp(index int) {
 	for index > 0 {
 		parentIndex := (index - 1) / 2
-		if s.getPriority(s.tasks[parentIndex].Identifier) >= s.getPriority(s.tasks[index].Identifier) {
+		if h.getPriority(h.tasks[parentIndex].Identifier) >= h.getPriority(h.tasks[index].Identifier) {
 			break
 		}
-		s.swap(index, parentIndex)
+		h.swap(index, parentIndex)
 		index = parentIndex
 	}
 }
 
-func (s *Scheduler) siftDown(index int) {
-	lastIndex := len(s.tasks) - 1
+func (h *PriorityHeap) siftDown(index int) {
+	lastIndex := len(h.tasks) - 1
 	for {
 		leftChildIndex := 2*index + 1
 		rightChildIndex := 2*index + 2
 		largestIndex := index
 
 		if leftChildIndex <= lastIndex &&
-			s.getPriority(s.tasks[leftChildIndex].Identifier) > s.getPriority(s.tasks[largestIndex].Identifier) {
+			h.getPriority(h.tasks[leftChildIndex].Identifier) > h.getPriority(h.tasks[largestIndex].Identifier) {
 			largestIndex = leftChildIndex
 		}
 		if rightChildIndex <= lastIndex &&
-			s.getPriority(s.tasks[rightChildIndex].Identifier) > s.getPriority(s.tasks[largestIndex].Identifier) {
+			h.getPriority(h.tasks[rightChildIndex].Identifier) > h.getPriority(h.tasks[largestIndex].Identifier) {
 			largestIndex = rightChildIndex
 		}
 
@@ -97,18 +106,18 @@ func (s *Scheduler) siftDown(index int) {
 			break
 		}
 
-		s.swap(index, largestIndex)
+		h.swap(index, largestIndex)
 		index = largestIndex
 	}
 }
 
-func (s *Scheduler) getPriority(taskID int) int {
-	return s.priorities[taskID]
+func (h *PriorityHeap) getPriority(taskID int) int {
+	return h.priorities[taskID]
 }
 
-func (s *Scheduler) swap(i, j int) {
-	s.idToIndex[s.tasks[i].Identifier] = j
-	s.idToIndex[s.tasks[j].Identifier] = i
+func (h *PriorityHeap) swap(i, j int) {
+	h.idToIndex[h.tasks[i].Identifier] = j
+	h.idToIndex[h.tasks[j].Identifier] = i
 
-	s.tasks[i], s.tasks[j] = s.tasks[j], s.tasks[i]
+	h.tasks[i], h.tasks[j] = h.tasks[j], h.tasks[i]
 }
